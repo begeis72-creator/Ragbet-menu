@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rağbet Bağlar | Cafe & Bistro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --dark: #050505;
+            --card-bg: #141414;
+            --text: #E0E0E0;
+            --panel-bg: #0f0f0f;
+        }
+
+        /* --- SIFIRLAMA --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--dark); 
+            color: var(--text); 
+            overflow-x: hidden; 
+            user-select: none;
+        }
+
+        /* --- 1. GİRİŞ EKRANI --- */
+        #welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000 90%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; padding: 20px; text-align: center;
+            transition: opacity 0.6s ease;
+        }
+        
+        .welcome-logo {
+            width: 180px; margin-bottom: 30px;
+            filter: drop-shadow(0 0 25px rgba(212,175,55,0.2));
+            animation: float 4s ease-in-out infinite;
+            border-radius: 50%;
+            border: 2px solid var(--gold);
+            padding: 5px;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        .welcome-msg { font-family: 'Playfair Display', serif; font-size: 28px; color: #fff; margin-bottom: 5px; font-weight: 700; }
+        .welcome-sub { font-size: 12px; color: var(--gold); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 50px; opacity: 0.8; }
+
+        .enter-btn {
+            padding: 16px 50px; background: transparent; border: 1px solid var(--gold);
+            color: var(--gold); font-size: 14px; letter-spacing: 2px; font-weight: 600;
+            cursor: pointer; transition: 0.3s; border-radius: 50px;
+        }
+        .enter-btn:hover { background: var(--gold); color: #000; box-shadow: 0 0 30px rgba(212,175,55,0.4); }
+        
+        /* --- 2. ANA MENÜ --- */
+        #main-app { display: none; padding-bottom: 40px; opacity: 0; transition: opacity 0.8s; }
+        
+        header {
+            background: rgba(5,5,5,0.95); padding: 15px 15px 5px 15px; text-align: center;
+            position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #222;
+            backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center;
+        }
+        .header-logo-img { width: 60px; margin-bottom: 5px; border-radius: 50%; border: 1px solid var(--gold); }
+        .header-sub { font-size: 9px; color: #666; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 15px; }
+        
+        /* ARAMA ÇUBUĞU */
+        .search-container { position: relative; width: 100%; max-width: 400px; margin-bottom: 10px; }
+        .search-input {
+            width: 100%; padding: 12px 15px 12px 45px; background: #1a1a1a;
+            border: 1px solid #333; border-radius: 25px; color: #fff; font-family: 'Poppins';
+            font-size: 14px; transition: 0.3s;
+        }
+        .search-input:focus { border-color: var(--gold); background: #222; }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #666; font-size: 14px; }
+
+        /* KATEGORİ IZGARASI (GRID) */
+        #category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; animation: fadeIn 0.5s ease; }
+        .cat-card {
+            background: var(--card-bg); border-radius: 16px; padding: 25px 10px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border: 1px solid #222; transition: 0.3s; cursor: pointer; aspect-ratio: 1.1/1;
+        }
+        .cat-card:active { transform: scale(0.96); border-color: var(--gold); background: #1a1a1a; }
+        .cat-icon { font-size: 32px; color: var(--gold); margin-bottom: 15px; }
+        .cat-title { font-size: 14px; font-weight: 500; text-align: center; color: #ddd; }
+
+        /* ÜRÜN LİSTESİ */
+        #product-list-view { display: none; padding: 20px; animation: slideIn 0.4s ease; }
+        .list-header { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        .back-btn { background: none; border: none; color: var(--gold); font-size: 24px; margin-right: 15px; cursor: pointer; }
+        .page-title { font-family: 'Playfair Display', serif; font-size: 20px; color: #fff; text-transform: uppercase; }
+
+        .product-card {
+            background-color: var(--card-bg); border-radius: 16px; overflow: hidden;
+            display: flex; border: 1px solid #222; transition: all 0.3s; position: relative;
+            margin-bottom: 15px; align-items: center; border-left: 4px solid var(--gold);
+        }
+        
+        .product-img { width: 85px; height: 85px; object-fit: cover; background-color: #000; cursor: pointer; border-right: 1px solid #222; }
+        .product-info { padding: 15px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .product-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 4px; line-height: 1.2; }
+        .product-desc { font-size: 11px; color: #888; margin-bottom: 5px; line-height: 1.3; }
+        .price { color: var(--gold); font-weight: bold; font-size: 16px; }
+
+        /* ROZETLER */
+        .badge {
+            position: absolute; top: 0; right: 0; font-size: 9px; padding: 4px 8px;
+            font-weight: bold; text-transform: uppercase; border-bottom-left-radius: 10px;
+            color: #fff;
+        }
+        .badge.new { background: #3498db; } 
+        .badge.chef { background: #2ecc71; color:#000; } 
+        .badge.spicy { background: #d35400; } 
+        .badge.deal { background: #e74c3c; } 
+
+        /* FOOTER */
+        .app-footer {
+            text-align: center; padding: 30px 20px; background: #080808; border-top: 1px solid #1a1a1a;
+            margin-top: 20px;
+        }
+        .social-icons { margin-bottom: 15px; }
+        .social-link { 
+            display: inline-flex; width: 45px; height: 45px; border-radius: 50%; 
+            background: #1a1a1a; color: #888; align-items: center; justify-content: center;
+            margin: 0 8px; font-size: 20px; text-decoration: none; transition: 0.3s; border: 1px solid #333;
+        }
+        .social-link:hover { background: var(--gold); color: #000; border-color: var(--gold); }
+        .footer-text { font-size: 11px; color: #555; margin-top: 10px;}
+
+        /* LIGHTBOX */
+        #lightbox { display: none; position: fixed; inset: 0; z-index: 20000; background: rgba(0,0,0,0.95); align-items: center; justify-content: center; }
+        #lightbox img { max-width: 90%; max-height: 80vh; border: 2px solid var(--gold); border-radius: 10px; box-shadow: 0 0 30px rgba(212,175,55,0.3); }
+        .close-lightbox { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- GİRİŞ EKRANI -->
+    <div id="welcome-screen">
+        <img src="logo.png" onerror="this.src='https://via.placeholder.com/200/000000/D4AF37?text=RB'" class="welcome-logo">
+        <div class="welcome-msg">Hoş Geldiniz!</div>
+        <div class="welcome-sub">Bağlar &bull; Cafe & Bistro</div>
+        <button class="enter-btn" onclick="enterApp()">MENÜYÜ İNCELE</button>
+    </div>
+
+    <!-- ANA UYGULAMA -->
+    <div id="main-app">
+        <header>
+            <img src="logo.png" onerror="this.src='https://via.placeholder.com/60/000000/D4AF37?text=RB'" class="header-logo-img">
+            <div class="header-sub">Bağlar &bull; Cafe & Bistro</div>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Ürün ara..." onkeyup="searchMenu(this.value)">
+            </div>
+        </header>
+
+        <div id="loading" style="text-align:center; margin-top:50px; color:var(--gold); font-size:14px;">
+            <i class="fas fa-circle-notch fa-spin"></i> Yükleniyor...
+        </div>
+
+        <!-- KATEGORİ IZGARASI (GRID) -->
+        <div id="category-grid">
+            <div class="cat-card" onclick="openCategory('Kampanya')"><i class="fas fa-tags cat-icon"></i><div class="cat-title">Kampanyalar</div></div>
+            <div class="cat-card" onclick="openCategory('Kahvaltı')"><i class="fas fa-egg cat-icon"></i><div class="cat-title">Kahvaltı</div></div>
+            <div class="cat-card" onclick="openCategory('Yemek')"><i class="fas fa-hamburger cat-icon"></i><div class="cat-title">Yemekler</div></div>
+            <div class="cat-card" onclick="openCategory('Atıştırmalık')"><i class="fas fa-utensils cat-icon"></i><div class="cat-title">Atıştırmalık</div></div>
+            <div class="cat-card" onclick="openCategory('Sıcak')"><i class="fas fa-mug-hot cat-icon"></i><div class="cat-title">Sıcaklar</div></div>
+            <div class="cat-card" onclick="openCategory('Soğuk')"><i class="fas fa-glass-whiskey cat-icon"></i><div class="cat-title">Soğuklar</div></div>
+            <div class="cat-card" onclick="openCategory('Tatlı')"><i class="fas fa-cookie-bite cat-icon"></i><div class="cat-title">Tatlılar</div></div>
+            <div class="cat-card" onclick="openCategory('Nargile')"><i class="fas fa-cloud cat-icon"></i><div class="cat-title">Nargileler</div></div>
+        </div>
+        
+        <!-- ÜRÜN LİSTESİ -->
+        <div id="product-list-view">
+            <div class="list-header">
+                <button class="back-btn" onclick="goBack()"><i class="fas fa-chevron-left"></i></button>
+                <div class="page-title" id="pageTitle">KATEGORİ</div>
+            </div>
+            <div id="menu-container"></div>
+        </div>
+
+        <div class="app-footer">
+            <div class="social-icons">
+                <a href="https://www.instagram.com/ragbetbaglar?igsh=MWZsMnd1eDA0dGxjZg==" target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
+                <a href="https://wa.me/905325259494" target="_blank" class="social-link"><i class="fab fa-whatsapp"></i></a>
+                <a href="#" class="social-link"><i class="fas fa-map-marker-alt"></i></a>
+            </div>
+            <div class="footer-text">© 2025 Rağbet Bağlar. Tüm hakları saklıdır.</div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div id="lightbox" onclick="this.style.display='none'">
+        <div class="close-lightbox">&times;</div>
+        <img id="lightbox-img" src="">
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // --- SENİN VERDİĞİN FIREBASE CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_T5V_iJ6ZKDj0k4XQ9hmKiHVR-umb5ho",
+            authDomain: "ragbet-cafe26.firebaseapp.com",
+            databaseURL: "https://ragbet-cafe26-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "ragbet-cafe26",
+            storageBucket: "ragbet-cafe26.firebasestorage.app",
+            messagingSenderId: "193248316486",
+            appId: "1:193248316486:web:d6d4647afc16c30bfa0e47",
+            measurementId: "G-1T7K39ME7L"
+        };
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        let menuData = [];
+        let activeCategory = null;
+
+        db.ref('menu').on('value', (snapshot) => {
+            document.getElementById('loading').style.display = 'none';
+            const data = snapshot.val();
+            menuData = [];
+            if(data) {
+                Object.keys(data).forEach(key => {
+                    menuData.push({ ...data[key], firebaseId: key });
+                });
+            }
+            // Eğer bir kategori açıksa güncelle
+            if(activeCategory) renderMenu(activeCategory);
+        });
+
+        function enterApp() {
+            document.getElementById('welcome-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('welcome-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                setTimeout(() => document.getElementById('main-app').style.opacity = '1', 50);
+            }, 600);
+        }
+
+        function openCategory(cat) {
+            activeCategory = cat;
+            document.getElementById('category-grid').style.display = 'none';
+            document.getElementById('product-list-view').style.display = 'block';
+            document.getElementById('pageTitle').innerText = cat.toUpperCase();
+            
+            // Arama kutusunu temizle ve placeholder'ı güncelle
+            document.querySelector('.search-input').value = '';
+            document.querySelector('.search-input').placeholder = cat + " içinde ara...";
+            
+            renderMenu(cat);
+        }
+
+        function goBack() {
+            activeCategory = null;
+            document.getElementById('product-list-view').style.display = 'none';
+            document.getElementById('category-grid').style.display = 'grid';
+            
+            // Arama kutusunu sıfırla
+            document.querySelector('.search-input').value = '';
+            document.querySelector('.search-input').placeholder = "Tüm menüde ara...";
+        }
+
+        function renderMenu(cat, filterText = '') {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+            
+            const filtered = menuData.filter(item => {
+                const matchCat = (item.cat === cat);
+                const matchText = item.name.toLowerCase().includes(filterText.toLowerCase());
+                return matchCat && matchText;
+            });
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:#555; padding:20px;">Bu kategoride ürün yok.</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                let safeImg = item.img || "logo.png";
+                let badgeHtml = "";
+                if(item.badge === "new") badgeHtml = `<div class="badge new">YENİ</div>`;
+                else if(item.badge === "chef") badgeHtml = `<div class="badge chef">ŞEFİN</div>`;
+                else if(item.badge === "spicy") badgeHtml = `<div class="badge spicy">ACI</div>`;
+                else if(item.badge === "deal") badgeHtml = `<div class="badge deal">FIRSAT</div>`;
+
+                let html = `
+                <div class="product-card">
+                    ${badgeHtml}
+                    <img src="${safeImg}" class="product-img" onerror="this.src='logo.png'" onclick="openLightbox('${safeImg}')">
+                    <div class="product-info">
+                        <div class="product-title">${item.name}</div>
+                        <div class="product-desc">${item.desc || ""}</div>
+                        <div class="price">${item.price}₺</div>
+                    </div>
+                </div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function searchMenu(val) {
+            const term = val.toLowerCase();
+            
+            if (activeCategory) {
+                // Kategori içindeysek o kategoride ara
+                renderMenu(activeCategory, term);
+            } else {
+                // Ana sayfadaysak (Grid görünümü) genel arama yap
+                if (term.length > 0) {
+                    document.getElementById('category-grid').style.display = 'none';
+                    document.getElementById('product-list-view').style.display = 'block';
+                    document.getElementById('pageTitle').innerText = "ARAMA SONUÇLARI";
+                    document.querySelector('.back-btn').onclick = goBack;
+
+                    const container = document.getElementById('menu-container');
+                    container.innerHTML = '';
+                    
+                    const results = menuData.filter(p => p.name.toLowerCase().includes(term));
+                    
+                    if(results.length === 0) container.innerHTML = '<div style="text-align:center; color:#555; padding:20px;">Sonuç yok.</div>';
+                    
+                    results.forEach(item => {
+                         let safeImg = item.img || "logo.png";
+                         // ... (Yukarıdaki kart oluşturma kodunun aynısı)
+                         let badgeHtml = "";
+                        if(item.badge === "new") badgeHtml = `<div class="badge new">YENİ</div>`;
+                        else if(item.badge === "chef") badgeHtml = `<div class="badge chef">ŞEFİN</div>`;
+                        else if(item.badge === "spicy") badgeHtml = `<div class="badge spicy">ACI</div>`;
+                        else if(item.badge === "deal") badgeHtml = `<div class="badge deal">FIRSAT</div>`;
+
+                        let html = `
+                        <div class="product-card">
+                            ${badgeHtml}
+                            <img src="${safeImg}" class="product-img" onerror="this.src='logo.png'" onclick="openLightbox('${safeImg}')">
+                            <div class="product-info">
+                                <div class="product-title">${item.name} <small style="color:#666">(${item.cat})</small></div>
+                                <div class="product-desc">${item.desc || ""}</div>
+                                <div class="price">${item.price}₺</div>
+                            </div>
+                        </div>`;
+                        container.innerHTML += html;
+                    });
+
+                } else {
+                    goBack(); // Arama temizlenirse ana ekrana dön
+                }
+            }
+        }
+        
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
+
+
